@@ -1,0 +1,28 @@
+[project]
+name = "predictomes-vis"
+version = "0.1.0"
+description = "Predictomes visualization toolkit (network + binary plots)."
+authors = [{name = "Matthias Vorlaender"}]
+requires-python = ">=3.9"
+dependencies = [
+    "pyvis==0.3.2",
+    "certifi==2024.8.30",
+    "pandas>=2.0.0",
+    "plotly>=5.0.0",
+    "kaleido==0.2.1",
+]
+readme = "README.md"
+
+[project.scripts]
+predictomes-vis = "predictomes_vis.cli:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"": "predictomes_vis"}
+packages = ["predictomes_vis", "predictomes_build_ppi_network"]
+
+[tool.setuptools.package-data]
+predictomes_vis = ["predictome_data/json_metrics_matrix.tsv", "predictome_data/20251113_download_hsbps.csv"]
