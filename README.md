@@ -24,11 +24,11 @@ Two metrics are supported:
 
 ###  TL;DR / Quick Start commands
 - Network mode (high confidence subset): 
-`predictomes_vis.sh network  --poi A1AG2_HUMAN `
+`predictomes_vis.sh network  --poi DX39B_HUMAN `
 - Network (all predictions threshodled by peak_score, showinf two layers of interactors): ): 
-`predictomes_vis.sh network --metric peak_score --poi A1AG2_HUMAN --peak-threshold 0.9 --expansion-depth 2`
+`predictomes_vis.sh network --metric peak_score --poi DX39B_HUMAN --peak-threshold 0.9 --expansion-depth 2`
 - Binary plots: 
-`predictomes_vis.sh binary --poi A1AG2_HUMAN --outdir /tmp/predictome_binary_plots`
+`predictomes_vis.sh binary --poi DX39B_HUMAN --outdir /tmp/predictome_binary_plots`
 - Help: 
 `predictomes_vis.sh --help`, `predictomes_vis.sh network --help`, `predictomes_vis.sh binary --help`.
 
