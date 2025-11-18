@@ -146,7 +146,8 @@ Defaults:
 - Predictome matrix path is set via `PREDICTOMES_PEAK_MATRIX` inside the container.
 
 This generates a number of plots, including the main scatter plot of ipTM vs pTM with peak score as color, a beeswarm plot of peak scores across all tested proteins, and histograms of the three metrics. Here is an example output for ACINU_HUMAN:
-![alt text](ACINU_HUMAN_peak_vs_iptm.png)
+
+![alt text](image-6.png)
 
 Predictions with high peak scores and high IPTM scores are in the top right corner, indicating confident interaction predictions and well-folded proteins. Predictions with high peak scores but low ipTM scores (top left corner) may indicate potential interactions involving disordered regions or flexible binding modes in large proteins, and are potentially missed by global metrics.
 
