@@ -3,7 +3,3 @@ __pycache__/
 *.pyo
 *.tar
 *.done
-predictomes_vis/predictome_data/json_metrics_matrix.tsv
-alphafold_peaks/data/predictome_json_stats_251115/json_metrics_matrix.tsv
-alphafold_peaks/data/predictome_json_stats_251115/json_rank_details.tsv
-alphafold_peaks/data/predictome_json_stats_251115/json_peaks.txt
