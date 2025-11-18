@@ -81,10 +81,10 @@ Outputs are saved to `outputs/ppi_networks/DX39B_HUMAN/` by default and can be v
 # Network mode, high confidence interactors with FDR<10% (default), displaying only direct predicted neighbors, using only high-confidence predictions) :
 /resources/AF2_PPI_tools/predictomes_vis.sh network --poi DX39B_HUMAN --expansion-depth 0
 ```
+This plot looks like this:
 
 ![alt text](image-1.png)
 
-This plot looks like this:
 
 ```bash
 # Network mode, high confidence interactors with FDR<10% (default), displaying two layers of neighbors, using only high-confidence predictions) :
@@ -144,6 +144,11 @@ Defaults:
 - Output dirs: `outputs/ppi_networks` (network) and `outputs/predictome_binary_plots` (binary)
 - DOT/PNG disabled by default; JSON/PyVis enabled for network outputs.
 - Predictome matrix path is set via `PREDICTOMES_PEAK_MATRIX` inside the container.
+
+This generates a number of plots, including the main scatter plot of ipTM vs pTM with peak score as color, a beeswarm plot of peak scores across all tested proteins, and histograms of the three metrics. Here is an example output for ACINU_HUMAN:
+![alt text](ACINU_HUMAN_peak_vs_iptm.png)
+
+Predictions with high peak scores and high IPTM scores are in the top right corner, indicating confident interaction predictions and well-folded proteins. Predictions with high peak scores but low ipTM scores (top left corner) may indicate potential interactions involving disordered regions or flexible binding modes in large proteins, and are potentially missed by global metrics.
 
 # Batch processing
 Both `network` and `binary` modes support batch processing of multiple POIs by providing either:
