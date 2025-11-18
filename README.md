@@ -1,10 +1,7 @@
 # predictomes-vis
 
-## TL;DR / Quick Start
-- Network (FDR): `/resources/AF2_PPI_tools/predictomes_vis.sh network --metric FDR --poi A1AG2_HUMAN --expansion-depth 0`
-- Network (peak_score): `/resources/AF2_PPI_tools/predictomes_vis.sh network --metric peak_score --poi A1AG2_HUMAN --peak-threshold 0.75 --expansion-depth 1`
-- Binary plots: `/resources/AF2_PPI_tools/predictomes_vis.sh binary --poi A1AG2_HUMAN --outdir /tmp/predictome_binary_plots`
-- Help: run `predictomes_vis.sh --help`, `predictomes_vis.sh network --help`, `predictomes_vis.sh binary --help`.
+M. Vorländer, Plaschka lab @ IMP Vienna November 2025
+matthias.vorlaender@imp.ac.at
 
 ## Overview
 
@@ -12,33 +9,49 @@ Toolkit for visualizing AF2-based protein-protein interaction predictions (PPI) 
 
 In addition to the confidence metrics available on the website, this tool allows visualising the "peak score" metric implemented by Dominik Handler in the VBC [HT-Alphafold](https://gitlab.com/BrenneckeLab/ht-colabfold) pipeline, which is more sensitive to small interfaces in large proteins. This score was extracted for the complete set of 1.6 million predictions.
 
+
 ## Plotting modes
 
 The script provides two main modes of operation:
 
-- **network** mode: build PPI networks from predictions around your protein of interest (POI). The user can control the depth of the network (i,e ., direct neighbors only, or neighbors of neighbors, etc.) and the scoring metric used to filter predictions using a --metric keyword. Two metrics are supported:
-  - annotated high-confidence predictions results (<10% FDR, using the SPOC score) (set of ~16000 high-confidence predictions provided in `20251113_download_hsbps.csv`)
-  - **peak_score**: Peak scores extracted from the full predictome matrix (1.6 million predictions, provided in `predictome_json_stats_251115/json_metrics_matrix.tsv`)
-- **binary** mode: One-vs-all plots for your poi mimicking the [HT-Alphafold](https://gitlab.com/BrenneckeLab/ht-colabfold) output for your POI (ptm/iptm/peak scatter, beeswarm, histograms) from the predictome matrix.
+- **network** mode: build PPI networks from predictions around your protein of interest (POI). You can control the depth of the network (i,e. direct neighbors only, or neighbors of neighbors, etc.) and the scoring metric used to filter predictions using a --metric keyword. 
+Two metrics are supported:
+  - **SPOC score for a subset of high-confidence predictions results** (<10% FDR) (set of ~16000 high-confidence predictions provided in `20251113_download_hsbps.csv`)
+  - **peak_score**: peak scores extracted from the full predictome matrix (1.6 million predictions, provided in `predictome_json_stats_251115/json_metrics_matrix.tsv`). 
+- **binary** mode: One-vs-all plots for your poi, mimicking the [HT-Alphafold](https://gitlab.com/BrenneckeLab/ht-colabfold) output (ptm/iptm/peak scatter, beeswarm, histograms) from the predictome matrix.
 
 >**Note** You can switch between network and binary modes by providing the respective keyword as first argument to the script (see examples below).
+
+###  TL;DR / Quick Start commands
+- Network mode (high confidence subset): 
+`predictomes_vis.sh network  --poi A1AG2_HUMAN `
+- Network (all predictions threshodled by peak_score, showinf two layers of interactors): ): 
+`predictomes_vis.sh network --metric peak_score --poi A1AG2_HUMAN --peak-threshold 0.9 --expansion-depth 2`
+- Binary plots: 
+`predictomes_vis.sh binary --poi A1AG2_HUMAN --outdir /tmp/predictome_binary_plots`
+- Help: 
+`predictomes_vis.sh --help`, `predictomes_vis.sh network --help`, `predictomes_vis.sh binary --help`.
+
 
 ## Running on CLIP (VBC cluster)
 
 The tool is installed as a container that bundles both data sources:
-- `20251113_download_hsbps.csv` (high-confidence SPOC, FDR mode)
-- `predictome_json_stats_251115/json_metrics_matrix.tsv` (predictome matrix, peak_score mode)
+- `20251113_download_hsbps.csv` (high-confidence subset,for FDR mode)
+- `predictome_json_stats_251115/json_metrics_matrix.tsv` (complete predictome matrix, for peak_score mode)
 
-For easy execution, a wrapper is available on the host.  Below are some example commands.
-
-
-### Getting started 
-Help pages for the various modes are available via:
+For easy execution, a wrapper is available on the cluster under. Below  is a set of example commands to get you started. 
 ```
 /resources/AF2_PPI_tools/predictomes_vis.sh --help
 /resources/AF2_PPI_tools/predictomes_vis.sh network --help
 /resources/AF2_PPI_tools/predictomes_vis.sh binary --help
 ```
+
+>**Tip**: If you don't like typing long paths, you can paste the command below in your terminal to add it to your $PATH permanently (so in teh future you can type just `predictomes_vis.sh` instead of the full path):
+```
+grep -q "/resources/AF2_PPI_tools" ~/.bashrc 2>/dev/null || echo -e '\n# predictomes-vis wrapper\nif [ -x /resources/AF2_PPI_tools/predictomes_vis.sh ]; then\n  export PATH="/resources/AF2_PPI_tools:$PATH"\nfi' >> ~/.bashrc; export PATH="/resources/AF2_PPI_tools:$PATH"
+```
+
+You might need to restart your terminal or run `exec bash` for the change to take effect.
 
 ### Example usages - network display
 
