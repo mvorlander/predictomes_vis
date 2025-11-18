@@ -10,6 +10,7 @@ import argparse
 import os
 from pathlib import Path
 from typing import Iterable
+import re
 
 import numpy as np
 import pandas as pd
@@ -130,12 +131,21 @@ def resolve_poi(raw_poi: str, df: pd.DataFrame) -> str:
 def gather_pois(args: argparse.Namespace) -> list[str]:
     pois: list[str] = []
     if args.poi:
-        pois.extend(args.poi)
+        for entry in args.poi:
+            for part in re.split(r"[,\s]+", entry.strip()):
+                if part:
+                    pois.append(part)
     if args.poi_file:
         if not args.poi_file.exists():
             raise SystemExit(f"POI file not found: {args.poi_file}")
         with args.poi_file.open() as fh:
-            pois.extend([line.strip() for line in fh if line.strip()])
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                for part in re.split(r"[,\s]+", line):
+                    if part:
+                        pois.append(part)
     if not pois:
         raise SystemExit("No POI provided. Use --poi or --poi-file.")
     seen = set()
@@ -148,11 +158,18 @@ def gather_pois(args: argparse.Namespace) -> list[str]:
 
 
 def get_default_matrix() -> Path:
-    env_path = os.environ.get("PREDICTOMES_DEFAULT_MATRIX")
+    env_path = os.environ.get("PREDICTOMES_DEFAULT_MATRIX") or os.environ.get("PREDICTOMES_PEAK_MATRIX")
     if env_path:
         return Path(env_path)
-    candidate = Path(__file__).resolve().parents[1] / "predictome_data" / "json_metrics_matrix.tsv"
-    return candidate
+    package_root = Path(__file__).resolve().parents[1]
+    candidates = [
+        package_root / "predictome_data" / "json_metrics_matrix.tsv",
+        package_root.parent / "data" / "predictome_json_stats_251115" / "json_metrics_matrix.tsv",
+    ]
+    for cand in candidates:
+        if cand.exists():
+            return cand
+    return candidates[0]
 
 
 def prepare_dataframe(df: pd.DataFrame, poi: str, peak_ceiling: float) -> pd.DataFrame:
@@ -423,12 +440,15 @@ def main(args: argparse.Namespace | None = None) -> None:
     if not matrix_path.exists():
         raise SystemExit(f"Matrix file not found: {matrix_path}")
 
+    print(f"[info] Loading matrix: {matrix_path}")
     df = pd.read_csv(matrix_path, sep="\t")
+    print(f"[info] Matrix loaded with {len(df):,} rows.")
     pois = gather_pois(args)
     args.outdir.mkdir(parents=True, exist_ok=True)
 
     for poi_in in pois:
         resolved_poi = resolve_poi(poi_in, df)
+        print(f"[info] Processing POI: {resolved_poi}")
         prepared = prepare_dataframe(df, poi=resolved_poi, peak_ceiling=args.peak_ceiling)
 
         csv_path = args.csv_out or (args.outdir / f"{resolved_poi}_filtered.csv")
@@ -492,6 +512,7 @@ def main(args: argparse.Namespace | None = None) -> None:
             args.outdir,
             f"{resolved_poi}_iptm_hist",
         )
+        print(f"[info] Finished POI: {resolved_poi}")
 
 
 if __name__ == "__main__":

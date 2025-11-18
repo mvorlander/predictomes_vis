@@ -19,11 +19,11 @@ RUN set -euo pipefail; \
 COPY predictomes_vis/predictomes_vis /opt/predictomes/predictomes_vis
 COPY predictomes_vis/pyproject.toml /opt/predictomes/pyproject.toml
 
-# Copy data
-COPY predictomes_vis/predictomes_vis/predictome_data/20251113_download_hsbps.csv /opt/predictomes/data/20251113_download_hsbps.csv
-COPY predictomes_vis/predictomes_vis/predictome_data/json_metrics_matrix.tsv /opt/predictomes/data/predictome_json_stats_251115/json_metrics_matrix.tsv
+# Copy data into package path
+COPY predictomes_vis/predictomes_vis/predictome_data/20251113_download_hsbps.csv /opt/predictomes/predictomes_vis/predictome_data/20251113_download_hsbps.csv
+COPY predictomes_vis/predictomes_vis/predictome_data/json_metrics_matrix.tsv /opt/predictomes/predictomes_vis/predictome_data/json_metrics_matrix.tsv
 
-ENV PREDICTOMES_PEAK_MATRIX=/opt/predictomes/data/predictome_json_stats_251115/json_metrics_matrix.tsv
+ENV PREDICTOMES_PEAK_MATRIX=/opt/predictomes/predictomes_vis/predictome_data/json_metrics_matrix.tsv
 ENV PIP_DEFAULT_TIMEOUT=180
 
 RUN pip install --no-cache-dir --progress-bar off \

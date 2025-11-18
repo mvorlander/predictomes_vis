@@ -74,19 +74,25 @@ def parse_args():
         help="Path to the SPOC CSV export (used when --metric FDR).",
     )
     src_group.add_argument(
-        "--predictome-peak-threshold",
+        "--peak-threshold",
+        "-k",
+        dest="predictome_peak_threshold",
         type=float,
         default=0.75,
         help="Minimum normalized peak average (1-score/ceiling) to include an edge when --metric peak_score.",
     )
     src_group.add_argument(
-        "--predictome-peak-ceiling",
+        "--peak-ceiling",
+        "-K",
+        dest="predictome_peak_ceiling",
         type=float,
         default=30.0,
         help="Peak score upper bound used for normalization when --metric peak_score.",
     )
     src_group.add_argument(
-        "--predictome-iptm-threshold",
+        "--iptm-threshold",
+        "-I",
+        dest="predictome_iptm_threshold",
         type=float,
         default=0.5,
         help="Minimum ipTM max to include an edge when --metric peak_score.",
@@ -101,7 +107,11 @@ def parse_args():
     input_group.add_argument(
         "--poi",
         action="append",
-        help="UniProt ID or UniProt entry name to match (repeatable, comma-separated list allowed).",
+        help="UniProt ID or UniProt entry name to match (repeatable; comma or space separated allowed).",
+    )
+    input_group.add_argument(
+        "--poi-file",
+        help="Text file with POIs (one per line or comma/space separated).",
     )
     viz_group.add_argument(
         "-l",
@@ -180,15 +190,28 @@ def parse_args():
     def normalize_queries(raw):
         queries = []
         for item in raw or []:
-            parts = [part.strip() for part in item.split(",")]
-            queries.extend(part for part in parts if part)
+            for part in re.split(r"[,\s]+", item.strip()):
+                if part:
+                    queries.append(part)
         return queries
 
-    args.uniprot_id = normalize_queries(args.uniprot_id) + normalize_queries(args.poi)
-    args.uniprot_name = normalize_queries(args.uniprot_name) + normalize_queries(args.poi)
+    poi_file_tokens: list[str] = []
+    if args.poi_file:
+        poi_file_tokens = []
+        qf_path = Path(args.poi_file)
+        if not qf_path.exists():
+            sys.exit(f"POI file not found: {args.poi_file}")
+        for line in qf_path.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            poi_file_tokens.extend([tok for tok in re.split(r"[,\s]+", line) if tok])
+
+    args.uniprot_id = normalize_queries(args.uniprot_id) + normalize_queries(args.poi) + poi_file_tokens
+    args.uniprot_name = normalize_queries(args.uniprot_name) + normalize_queries(args.poi) + poi_file_tokens
 
     if not args.uniprot_id and not args.uniprot_name:
-        parser.error("Provide --poi (recommended) or --id/--name at least once.")
+        parser.error("Provide --poi or --poi-file.")
     return args
 
 
@@ -218,12 +241,14 @@ def suggest_matches(queries: List[str], rows: List[dict]) -> List[str]:
 
 
 def load_rows(csv_path: Path) -> Tuple[Sequence[str], List[dict]]:
+    print(f"[info] Loading FDR CSV: {csv_path}", file=sys.stderr)
     with csv_path.open(newline="") as handle:
         reader = csv.DictReader(handle)
         cleaned_fields = [name for name in reader.fieldnames or [] if name]
         rows = []
         for row in reader:
             rows.append({field: row.get(field, "") for field in cleaned_fields})
+    print(f"[info] Loaded {len(rows):,} rows from FDR CSV.", file=sys.stderr)
     return cleaned_fields, rows
 
 
@@ -235,6 +260,7 @@ def float_or_none(value: str) -> float | None:
 
 
 def load_peak_matrix(tsv_path: Path, peak_threshold: float, iptm_threshold: float, peak_ceiling: float) -> Tuple[Sequence[str], List[dict]]:
+    print(f"[info] Loading peak matrix: {tsv_path}", file=sys.stderr)
     with tsv_path.open(newline="") as handle:
         reader = csv.DictReader(handle, delimiter="\t")
         cleaned_fields = [name for name in reader.fieldnames or [] if name]
@@ -287,7 +313,7 @@ def load_peak_matrix(tsv_path: Path, peak_threshold: float, iptm_threshold: floa
             rec.update({k: row.get(k, "") for k in cleaned_fields})
             rows.append(rec)
     field_set = set(rows[0].keys()) if rows else set(cleaned_fields)
-    print(f"[info] Peak matrix rows: {total_rows} read, {len(rows)} passed filters (peak>={peak_threshold}, iptm>={iptm_threshold})", file=sys.stderr)
+    print(f"[info] Peak matrix rows: {total_rows:,} read, {len(rows):,} passed filters (peak>={peak_threshold}, iptm>={iptm_threshold})", file=sys.stderr)
     return list(field_set), rows
 
 
@@ -335,7 +361,8 @@ def gather_network_rows(all_rows: Iterable[dict], seeds: set[str]) -> List[dict]
     network_rows: List[dict] = []
     for row in all_rows:
         ids = split_tokens(row.get("UniProt_ID", ""))
-        if any(protein in seeds for protein in ids):
+        names = split_tokens(row.get("UniProt_Name", ""))
+        if any(protein in seeds for protein in ids) or any(name in seeds for name in names):
             network_rows.append(row)
     return network_rows
 
@@ -912,6 +939,10 @@ def process_query(
         if (ids or names) and (id_match or name_match):
             matches_found.append(row)
 
+    print(
+        f"[info] Query IDs={ids or '-'} names={names or '-'} -> {len(matches_found)} match(es)",
+        file=sys.stderr,
+    )
     if not matches_found:
         suggested = suggest_matches(ids + names, rows)
         msg = f"No matches found for query IDs={ids or '-'} names={names or '-'}"
@@ -951,6 +982,10 @@ def process_query(
     render_network_summary(adjacency, node_labels, initial_seeds, args.edge_label_field)
 
     node_count = len(adjacency)
+    print(
+        f"[info] Expanded to {len(network_rows)} interaction rows, {node_count} nodes, {len(edges)} edges",
+        file=sys.stderr,
+    )
     large_graph = node_count > args.large_network_threshold
 
     if large_graph and not args.no_function_fetch:
