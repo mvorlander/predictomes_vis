@@ -64,7 +64,7 @@ Here is a simple example using DX39B_HUMAN (DEAD-box helicase 39B) as protein of
 # Network mode, high confidence interactors with FDR<10% (default), displaying predicted neighbors and their neighbors (default behaviour):
 /resources/AF2_PPI_tools/predictomes_vis.sh network --poi DX39B_HUMAN
 ```
-Outputs are saved to `outputs/ppi_networks/DX39B_HUMAN/` by default and can be visualised using the generated HTML file in a web browser. THis example looks like this:
+Outputs are saved to `outputs/ppi_networks/DX39B_HUMAN/` by default and can be visualised using the generated HTML file in a web browser. This example looks like this:
 ![alt text](image.png)
 
 **Explanation of the plot**
@@ -133,7 +133,7 @@ Where we get:
 
 ## Binary plots (one-vs-all metrics, Handler-style):
 
-These plots show prediction statistics for your POI against all tested proteins (1.6 million pairwose prediction set, see [Schmid et al.](https://www.biorxiv.org/content/10.1101/2025.11.10.687652?__cf_chl_tk=Tq5jkyy33O_VjEr9nfsezuPx1TG.H_rIUJCNS0_L_SY-1763463674-1.0.1.1-cIIZHc5NLOsEFrkd3H8iBHS27C52DMB2gljvQmt7tu0) for details ), in plots similar to the HT-Alphafold output. Propably the only option yuo ever might want to change is the output directory using `--outdir`.
+These plots show prediction statistics for your POI against all tested proteins (1.6 million pairwose prediction set, see [Schmid et al.](https://www.biorxiv.org/content/10.1101/2025.11.10.687652?__cf_chl_tk=Tq5jkyy33O_VjEr9nfsezuPx1TG.H_rIUJCNS0_L_SY-1763463674-1.0.1.1-cIIZHc5NLOsEFrkd3H8iBHS27C52DMB2gljvQmt7tu0) for details ), in plots similar to the HT-Alphafold output. Propably the only option you ever might want to change is the output directory using `--outdir`.
 
 ```bash
 /resources/AF2_PPI_tools/predictomes_vis.sh \
@@ -149,7 +149,7 @@ This generates a number of plots, including the main scatter plot of ipTM vs pTM
 
 ![alt text](image-6.png)
 
-Predictions with high peak scores and high IPTM scores are in the top right corner, indicating confident interaction predictions and well-folded proteins. Predictions with high peak scores but low ipTM scores (top left corner) may indicate potential interactions involving disordered regions or flexible binding modes in large proteins, and are potentially missed by global metrics.
+Predictions with high peak scores and high IPTM scores are in the top right corner, indicating confident interaction predictions and well-folded proteins. Predictions with high peak scores but low ipTM scores (bottom right corner) may indicate potential interactions involving disordered regions or flexible binding modes in large proteins, and are potentially missed by global metrics.
 
 # Batch processing
 Both `network` and `binary` modes support batch processing of multiple POIs by providing either:
